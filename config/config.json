@@ -1,22 +1,22 @@
 {
   "development": {
-    "username": "rootfreedb_rangkayo",
+    "username": "freedb_rangkayo",
     "password": "?kChCZmY73yx$nM",
-    "database": "freedb_rangkayo",
+    "database": "freedb_equiparenting",
     "host": "sql.freedb.tech",
     "dialect": "mysql"
   },
   "test": {
-    "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "127.0.0.1",
+    "username": "freedb_rangkayo",
+    "password": "?kChCZmY73yx$nM",
+    "database": "freedb_equiparenting",
+    "host": "sql.freedb.tech",
     "dialect": "mysql"
   },
   "production": {
-    "username": "rootfreedb_rangkayo",
+    "username": "freedb_rangkayo",
     "password": "?kChCZmY73yx$nM",
-    "database": "freedb_rangkayo",
+    "database": "freedb_equiparenting",
     "host": "sql.freedb.tech",
     "dialect": "mysql"
   }
