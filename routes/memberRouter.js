@@ -3,6 +3,7 @@ const router = express.Router();
 const memberController = require("../controllers/memberController");
 const { requireAuth } = require("../middlewares/authMiddleware");
 
-router.post("/member", requireAuth, memberController.createMember);
+router.post("/members", requireAuth, memberController.createMember);
+router.get("/members", requireAuth, memberController.getAllMembersWithScores);
 
 module.exports = router;

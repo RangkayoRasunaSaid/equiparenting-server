@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Team_Member.belongsTo(models.User, { foreignKey: "id_user" });
+      Team_Member.hasOne(models.Score, { foreignKey: "id_member" });
     }
   }
 
