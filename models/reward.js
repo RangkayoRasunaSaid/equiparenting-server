@@ -44,6 +44,7 @@ module.exports = (sequelize, DataTypes) => {
       sequelize,
       modelName: "Reward",
       freezeTableName: true,
+      timestamps: false,
     }
   );
   return Reward;
