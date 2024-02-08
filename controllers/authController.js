@@ -14,7 +14,11 @@ const register = async (req, res) => {
     res.status(201).json({ message: "User created successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    if (error.name === "SequelizeUniqueConstraintError") {
+      res.status(400).json({ message: "Email sudah terdaftar" });
+    } else {
+      res.status(500).json({ message: "Internal server error" });
+    }
   }
 };
 
@@ -33,6 +37,8 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user.id }, "your_secret_key", { expiresIn: "1h" });
+
+    res.status(200).json({ token });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }

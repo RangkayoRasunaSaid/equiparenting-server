@@ -1,5 +1,6 @@
 "use strict";
 const { Model } = require("sequelize");
+
 module.exports = (sequelize, DataTypes) => {
   class Team_Member extends Model {
     /**
@@ -9,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Team_Member.belongsTo(models.Users, { foreignKey: "id_user" });
+      Team_Member.belongsTo(models.User, { foreignKey: "id_user" });
     }
   }
 
@@ -41,6 +42,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "Team_Member",
+      freezeTableName: true,
     }
   );
   return Team_Member;
