@@ -3,6 +3,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const authRouter = require("./routes/authRouter");
 const memberRouter = require("./routes/memberRouter");
+const scoreRouter = require("./routes/scoreRouter");
 const userActivityRouter = require('./controllers/activityController')
 
 const app = express();
@@ -13,6 +14,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(authRouter);
 app.use(memberRouter);
+app.use(scoreRouter);
 app.use(userActivityRouter);
 
 app.get("/", (req, res) => {
