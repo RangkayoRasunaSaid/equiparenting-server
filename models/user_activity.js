@@ -47,6 +47,10 @@ module.exports = (sequelize, DataTypes) => {
       description: {
         type: DataTypes.TEXT,
       },
+      point: {
+        type: DataTypes.INTEGER(10),
+        allowNull: false,
+      },
       approval_by: {
         type: DataTypes.ENUM("ayah", "bunda"),
       },
