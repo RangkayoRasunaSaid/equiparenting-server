@@ -19,6 +19,7 @@
   - [Create New Activity](#create-new-activity)
   - [Get Member Activity](#get-member-activity)
   - [Approve Activity](#approve-activity)
+  - [Get Member Total Points](#get-member-total-points)
 
 # Introduction
 
@@ -480,3 +481,27 @@ Gagal (Status Code: 500)
   "error": "Internal server error"
 }
 ```
+
+## Get Member Total Point
+
+- Endpoint : /activities/points/:id_member
+- Method : GET
+- Deskripsi : Endpoint ini digunakan untuk mendapatkan data total point dari member baik yang sudah diapprove maupun yang belum
+- Request Parameter
+  - id_member : Member ID
+- Response :
+  Sukses (Status Code: 200)
+
+````json
+{
+    point
+},
+
+
+Gagal (Status Code: 500)
+
+```json
+{
+  "message": "Error retrieving total points"
+}
+````

@@ -72,8 +72,26 @@ const approveActivity = async (req, res) => {
   }
 };
 
+const getTotalPointsByMemberId = async (req, res) => {
+  try {
+    const { id_member } = req.params;
+    console.log(id_member);
+    const totalPoints = await User_Activity.sum("point", {
+      where: {
+        id_member: id_member,
+      },
+    });
+
+    res.status(201).json(totalPoints);
+  } catch (error) {
+    console.error("Error retrieving total points:", error);
+    res.status(500).json({ message: "Error retrieving total points" });
+  }
+};
+
 module.exports = {
   createActivity,
   getMemberActivity,
   approveActivity,
+  getTotalPointsByMemberId,
 };
