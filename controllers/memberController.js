@@ -32,7 +32,7 @@ const getAllMembersWithScores = async (req, res) => {
           required: false,
         },
       ],
-      attributes: ["name", "member_role", "avatar"],
+      attributes: ["id", "name", "member_role", "avatar"],
     });
 
     const membersWithScore = members.map((member) => ({
@@ -47,7 +47,29 @@ const getAllMembersWithScores = async (req, res) => {
   }
 };
 
+const deleteMember = async (req, res) => {
+  try {
+    const { memberId } = req.params; // Assuming memberId is passed as a URL parameter
+    
+    // Delete the member
+    const deletedMember = await Team_Member.destroy({ where: { id: memberId } });
+
+    // Delete the associated score (if exists)
+    // await Score.destroy({ where: { id_member: memberId } });
+
+    if (deletedMember) {
+      res.status(200).json({ message: "Member deleted successfully" });
+    } else {
+      res.status(404).json({ message: "Member not found" });
+    }
+  } catch (error) {
+    console.error("Error deleting member:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   createMember,
   getAllMembersWithScores,
+  deleteMember
 };

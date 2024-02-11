@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const authRouter = require("./routes/authRouter");
 const memberRouter = require("./routes/memberRouter");
 const userRouter = require("./routes/userRouter");
+const rewardRouter = require('./routes/rewardRouter')
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,6 +15,7 @@ app.use(bodyParser.json());
 app.use(authRouter);
 app.use(memberRouter);
 app.use(userRouter);
+app.use(rewardRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Equiparenting API");
