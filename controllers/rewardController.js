@@ -2,11 +2,12 @@ const { Reward } = require('../models'); // Assuming your model is in the 'model
 
 // Controller to create new dates for a reward
 const createRewardDates = async (req, res) => {
-  const { start_date, end_date, spinned_at } = req.body;
+  const { member_id, start_date, end_date, spinned_at } = req.body;
 
   try {
 
     const reward = await Reward.create({
+      member_id,
       start_date,
       end_date,
       spinned_at,
@@ -81,6 +82,7 @@ const getAllRewardDates = async (req, res) => {
 
     const rewardDates = rewards.map(reward => ({
       id: reward.id,
+      member_id: reward.id_member,
       start_date: reward.start_date,
       end_date: reward.end_date,
       spinned_at: reward.spinned_at,
