@@ -16,6 +16,9 @@
   - [Get User Profile ](#get-user-profile)
   - [Update User Profile](#update-user-profile)
   - [Update User Password](#update-user-password)
+  - [Create New Activity](#create-new-activity)
+  - [Get Member Activity](#get-member-activity)
+  - [Approve Activity](#approve-activity)
 
 # Introduction
 
@@ -137,7 +140,7 @@ Gagal (Status Code: 404)
 
 ```json
 {
-  message: "User not found"
+  "message": "User not found"
 }
 ```
 
@@ -145,9 +148,10 @@ Gagal (Status Code: 401)
 
 ```json
 {
-  message: "Invalid credentials"
+  "message": "Invalid credentials"
 }
 ```
+
 ## Create Member
 
 - Endpoint : /members
@@ -169,7 +173,7 @@ Gagal (Status Code: 401)
 
 ```json
 {
-  message: "Member created successfully"
+  "message": "Member created successfully"
 }
 ```
 
@@ -177,11 +181,12 @@ Gagal (Status Code: 500)
 
 ```json
 {
-  message: "Internal Server Error"
+  "message": "Internal Server Error"
 }
 ```
 
 Note: untuk saat ini belum ada penanganan untuk upload avatar
+
 ## Get Member Data
 
 - Endpoint : /members
@@ -206,12 +211,13 @@ Note: untuk saat ini belum ada penanganan untuk upload avatar
     ]
 }
 ```
+
 Note : contoh diatas response jika member belum memiliki score
 Gagal (Status Code: 500)
 
 ```json
 {
-  message: "Internal Server Error"
+  "message": "Internal Server Error"
 }
 ```
 
@@ -227,17 +233,18 @@ Gagal (Status Code: 500)
 
 ```json
 {
-    "username": "Naziilah",
-    "avatar": null
+  "username": "Naziilah",
+  "avatar": null
 }
 ```
+
 Note : contoh diatas adalah response jika user belum mengupload profile picture
 
 Gagal (Status Code: 404)
 
 ```json
 {
-  message: "User not found"
+  "message": "User not found"
 }
 ```
 
@@ -245,13 +252,14 @@ Gagal (Status Code: 500)
 
 ```json
 {
-  message: "Internal server error"
+  "message": "Internal server error"
 }
 ```
+
 ## Update User Profile
 
 - Endpoint : /update-profile
-- Method : POST
+- Method : PUT
 - Deskripsi : Endpoint ini digunakan untuk mengubah username user
 - Request Header
   - Authorization : jwt_token_here
@@ -259,7 +267,7 @@ Gagal (Status Code: 500)
 
 ```json
 {
-  "username": "username anda",
+  "username": "username anda"
 }
 ```
 
@@ -276,7 +284,7 @@ Gagal (Status Code: 404)
 
 ```json
 {
-  message: "User not found"
+  "message": "User not found"
 }
 ```
 
@@ -284,7 +292,7 @@ Gagal (Status Code: 500)
 
 ```json
 {
-  message: "Internal server error"
+  "message": "Internal server error"
 }
 ```
 
@@ -293,7 +301,7 @@ Note: untuk saat ini belum ada penanganan untuk upload profile picture
 ## Update User Password
 
 - Endpoint : /update-password
-- Method : POST
+- Method : PUT
 - Deskripsi : Endpoint ini digunakan untuk mengubah password user
 - Request Header
   - Authorization : jwt_token_here
@@ -319,7 +327,7 @@ Gagal (Status Code: 404)
 
 ```json
 {
-  message: "User not found"
+  "message": "User not found"
 }
 ```
 
@@ -327,7 +335,7 @@ Gagal (Status Code: 400)
 
 ```json
 {
-  message: "Invalid old password"
+  "message": "Invalid old password"
 }
 ```
 
@@ -335,6 +343,140 @@ Gagal (Status Code: 500)
 
 ```json
 {
-  message: "Internal server error"
+  "message": "Internal server error"
+}
+```
+
+## Create New Activity
+
+- Endpoint : /activities
+- Method : POST
+- Deskripsi : Endpoint ini digunakan untuk membuat mission baru
+- Request Body :
+
+```json
+{
+  "id_member": "member_id",
+  "title": "activity_title",
+  "category": "activity_category",
+  "date_start_act": "start_date",
+  "date_stop_act": "end_date",
+  "description": "activity_description",
+  "point": "activity_point"
+}
+```
+
+note: kategorinya :
+"Baby",
+"Dapur",
+"Laundry",
+"Kebun/Teras",
+"Liburan",
+"Kamar Tidur",
+"Kamar Mandi",
+"Edukasi",
+"Ruang Makan",
+"Lainnya"
+
+- Response :
+  Sukses (Status Code: 201)
+
+```json
+{
+  "id": "activity_id",
+  "id_member": "member_id",
+  "title": "activity_title",
+  "category": "activity_category",
+  "date_start_act": "start_date",
+  "date_stop_act": "end_date",
+  "description": "activity_description",
+  "point": "activity_point"
+}
+```
+
+Gagal (Status Code: 500)
+
+```json
+{
+  "message": "Error creating activity"
+}
+```
+
+## Get Member Activities
+
+- Endpoint : /activities/:id_member
+- Method : GET
+- Deskripsi : Endpoint ini digunakan untuk mendapatkan data mission dari member
+- Request Parameter
+  - id_member : Member ID
+- Response :
+  Sukses (Status Code: 200)
+
+```json
+[
+  {
+    "id": "activity_id",
+    "id_member": "member_id",
+    "title": "activity_title",
+    "category": "activity_category",
+    "date_start_act": "start_date",
+    "date_stop_act": "end_date",
+    "description": "activity_description",
+    "point": "activity_point",
+    "createdAt": "creation_date",
+    "updatedAt": "update_date"
+  },
+  ... data activity lain
+]
+```
+
+Gagal (Status Code: 500)
+
+```json
+{
+  "message": "Error retrieving activities"
+}
+```
+
+## Approve Activity
+
+- Endpoint : /activities/approve/:id_activity
+- Method : PUT
+- Deskripsi : Endpoint ini digunakan untuk approve mission yang selesai
+- Request Parameter
+  - id_activity : Activity ID
+- Request Body :
+
+```json
+{
+  "approval_by": "approver"
+}
+```
+
+Note :
+"ayah" atau "bunda"
+
+- Response :
+  Sukses (Status Code: 200)
+
+```json
+{
+  "message": "Activity approved successfully"
+}
+```
+
+Gagal (Status Code: 404)
+
+```json
+{
+  "message": "Activity not found"
+}
+```
+
+Gagal (Status Code: 500)
+
+```json
+{
+  "error": "Internal server error"
 }
 ```
