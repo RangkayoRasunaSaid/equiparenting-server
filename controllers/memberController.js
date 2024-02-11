@@ -4,6 +4,10 @@ const createMember = async (req, res) => {
   try {
     const { name, member_role, avatar } = req.body;
     const id_user = req.userId;
+    console.log(req.body);
+    console.log(req.body.name);
+    console.log(req.body.member_role);
+    console.log(req.body.avatar);
 
     const member = await Team_Member.create({
       name,
