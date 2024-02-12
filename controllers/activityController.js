@@ -1,5 +1,86 @@
-const { User_Activity } = require("../models");
-const { Score } = require("../models");
+const { User_Activity, Team_Member, Score } = require("../models");
+const db = require("../models");
+
+const getMemberActivityStats = async () => {
+  try {
+    const userId = req.userId;
+
+    // Determine the current period
+    const currentDate = new Date();
+
+    const members = await Team_Member.findAll({
+      where: { id_user: userId },
+      attributes: ["id", "name", "member_role", "avatar"],
+    });
+
+    // Retrieve data
+    const membersWithScore = await Promise.all(members.map(async (member) => {
+      const approvedActivities = await User_Activity.findAll({
+        where: {
+          id_member: member.id,
+          date_start_act: {
+            [db.Sequelize.Op.lte]: currentDate // Current date is after or equal to date_start_act
+          },
+          date_stop_act: {
+            [db.Sequelize.Op.gte]: currentDate // Current date is before or equal to date_stop_act
+          },
+          approval_by: {
+            [db.Sequelize.Op.ne]: null // Ensures approval_by is not empty
+          }
+        },
+        attributes: ['point']
+      });
+
+      // 3. Calculate the total points and total points that can be obtained within the current period
+      const totalPoints = approvedActivities.reduce((acc, activity) => acc + activity.point, 0);
+      const totalPossiblePoints = await User_Activity.sum("point", {
+        where: {
+          id_member: member.id,
+          date_start_act: {
+            [db.Sequelize.Op.lte]: currentDate // Current date is after or equal to date_start_act
+          },
+          date_stop_act: {
+            [db.Sequelize.Op.gte]: currentDate // Current date is before or equal to date_stop_act
+          }
+        },
+      });
+
+      // 4. Calculate the percentage
+      const percentage = (totalPoints / totalPossiblePoints) * 100;
+
+      return {
+        ...member.dataValues,
+        score: totalPoints,
+        percentage: isNaN(percentage) ? 0 : percentage, // Handle cases where totalPossiblePoints is 0
+      };
+    }));
+
+    // Group activities by member
+    const memberActivityGroups = {};
+    memberActivities.forEach(activity => {
+      const memberId = activity.Team_Member.id;
+      if (!memberActivityGroups[memberId]) {
+        memberActivityGroups[memberId] = {
+          member: activity.Team_Member,
+          completedCount: 0,
+          categories: {},
+          mostCompletedCategory: null
+        };
+      }
+      memberActivityGroups[memberId].completedCount++;
+      const category = activity.category;
+      memberActivityGroups[memberId].categories[category] = (memberActivityGroups[memberId].categories[category] || 0) + 1;
+      if (!memberActivityGroups[memberId].mostCompletedCategory || memberActivityGroups[memberId].categories[category] > memberActivityGroups[memberId].categories[memberActivityGroups[memberId].mostCompletedCategory]) {
+        memberActivityGroups[memberId].mostCompletedCategory = category;
+      }
+    });
+
+    return Object.values(memberActivityGroups);
+  } catch (error) {
+    console.error("Error getting member activity stats:", error);
+    throw error;
+  }
+};
 
 const createActivity = async (req, res) => {
   try {
@@ -109,4 +190,5 @@ module.exports = {
   approveActivity,
   getTotalPointsByMemberId,
   getAllCategories,
+  getMemberActivityStats
 };

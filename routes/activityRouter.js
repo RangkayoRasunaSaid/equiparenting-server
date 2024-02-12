@@ -7,5 +7,6 @@ router.get("/activities/:id_member", activityController.getMemberActivity);
 router.put("/activities/approve/:id_activity", activityController.approveActivity);
 router.get("/activities/points/:id_member", activityController.getTotalPointsByMemberId);
 router.get('/categories', activityController.getAllCategories);
+router.get('/stats', activityController.getMemberActivityStats);
 
 module.exports = router;
