@@ -2,15 +2,15 @@ const { Reward } = require('../models'); // Assuming your model is in the 'model
 
 // Controller to create new dates for a reward
 const createRewardDates = async (req, res) => {
-  const { member_id, start_date, end_date, spinned_at } = req.body;
+  const { spinned_at, start_date, end_date, id_member } = req.body;
 
   try {
 
     const reward = await Reward.create({
-      member_id,
+      spinned_at,
       start_date,
       end_date,
-      spinned_at,
+      id_member,
     });
 
     return res.status(200).json({ message: 'Reward dates created successfully' });
