@@ -1,4 +1,4 @@
-const { Team_Member, User_Activity } = require("../models");
+const { Team_Member, User_Activity, Reward } = require("../models");
 const db = require("../models");
 
 const createMember = async (req, res) => {
