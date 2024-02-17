@@ -4,7 +4,7 @@ const memberController = require("../controllers/memberController");
 const { requireAuth } = require("../middlewares/authMiddleware");
 
 router.post("/members", requireAuth, memberController.createMember);
-router.get("/members", requireAuth, memberController.getAllMembersWithScores);
+router.get("/members", requireAuth, memberController.getAllMembersWithDates);
 router.delete('/members/:memberId', requireAuth, memberController.deleteMember);
 
 module.exports = router;
