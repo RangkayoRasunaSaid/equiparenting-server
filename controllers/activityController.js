@@ -3,62 +3,69 @@ const db = require('../models'); // Assuming your Sequelize instance is exported
 
 const getMemberActivityStats = async (req, res) => {
   try {
-    const userId = req.userId;
-    const currentDate = new Date();
+    const { id_member, start_date, end_date} = req.params;
 
-    // Fetch members belonging to the user
-    const members = await Team_Member.findAll({
-      where: { id_user: userId },
-      attributes: ["id"],
-    });
-
-    // Extract member ids
-    const memberIds = members.map(member => member.id);
-
-    // Fetch completed activities for members belonging to the user
-    const completedActivities = await User_Activity.findAll({
+    const activities = await User_Activity.findAll({
       where: {
-        approval_by: { [db.Sequelize.Op.not]: null }, // Filter for completed activities
-        date_start_act: { [db.Sequelize.Op.lte]: currentDate },
-        date_stop_act: { [db.Sequelize.Op.gte]: currentDate },
-        id_member: { [db.Sequelize.Op.in]: memberIds } // Filter activities by member ids
+        id_member: id_member,
+        date_start_act: { [db.Sequelize.Op.gte]: start_date },
+        date_stop_act: { [db.Sequelize.Op.lte]: end_date }
       },
-      include: [{ model: Team_Member }]
     });
 
-    // Calculate sum of completed activities and categories for each member
-    const memberStatistics = {};
-    completedActivities.forEach(activity => {
-      const memberId = activity.id_member;
-      const memberName = activity.Team_Member.name; // Assuming there's a 'name' field in Team_Member
-      if (!memberStatistics[memberId]) {
-        memberStatistics[memberId] = {
-          name: memberName,
-          totalActivities: 0,
-          categories: new Set(),
-          categoryCounts: {}
-        };
+    // Query for activities with approval_by true
+    const approvedActivities = await User_Activity.findAll({
+      where: {
+        id_member: id_member,
+        date_start_act: { [db.Sequelize.Op.gte]: start_date },
+        date_stop_act: { [db.Sequelize.Op.lte]: end_date },
+        approval_by: { [db.Sequelize.Op.not]: null },
+      },
+    });
+
+    const score = await Score.findAll({
+      attributes: ['score'],
+      where: {
+        id_member: id_member,
       }
-      memberStatistics[memberId].totalActivities++;
-      memberStatistics[memberId].categories.add(activity.category);
-      memberStatistics[memberId].categoryCounts[activity.category] = (memberStatistics[memberId].categoryCounts[activity.category] || 0) + 1;
+    })
+
+    // Total count of activities
+    const completedActivitiesCount = approvedActivities.length;
+    const totalActivitiesCount = activities.length;
+
+    // Total points of all activities
+    const totalPoints = activities.reduce((acc, activity) => acc + activity.point, 0);
+    
+    // Count of different categories with approval_by
+    const categoryCounts = await User_Activity.findAll({
+      attributes: [
+        "category",
+        [db.Sequelize.fn("COUNT", "category"), "categoryCount"],
+      ],
+      where: {
+        id_member: id_member,
+        date_start_act: { [db.Sequelize.Op.gte]: start_date },
+        date_stop_act: { [db.Sequelize.Op.lte]: end_date },
+        approval_by: { [db.Sequelize.Op.not]: null },
+      },
+      group: ["category"],
+      order: [[db.Sequelize.literal("categoryCount DESC")]]
     });
 
-    // Find the category completed the most by each member
-    Object.values(memberStatistics).forEach(memberStat => {
-      let maxCategoryCount = 0;
-      let mostCompletedCategory = '';
-      Object.entries(memberStat.categoryCounts).forEach(([category, count]) => {
-        if (count > maxCategoryCount) {
-          maxCategoryCount = count;
-          mostCompletedCategory = category;
-        }
-      });
-      memberStat.mostCompletedCategory = mostCompletedCategory;
-    });
+    const maxCount = categoryCounts.length > 0 ? categoryCounts[0].dataValues.categoryCount : 0;
 
-    // Send the member statistics as a response
-    res.status(201).json(memberStatistics);
+    // Find all categories with the maximum categoryCount
+    const categoriesWithMaxCount = categoryCounts.filter(category => category.dataValues.categoryCount === maxCount);
+
+    res.json({
+      approvedActivities: completedActivitiesCount,
+      totalActivitiesCount: totalActivitiesCount,
+      percentage: Math.round(score[0].dataValues.score/(totalPoints || 1)*100),
+      totalPoints: totalPoints,
+      categoryCounts: categoryCounts,
+      maxApprovalCategory: categoriesWithMaxCount.length === 1 ? categoriesWithMaxCount[0] : null,
+    });
   } catch (error) {
     // Handle errors appropriately
     console.error("Error getting stats:", error);
@@ -90,10 +97,14 @@ const createActivity = async (req, res) => {
 
 const getMemberActivity = async (req, res) => {
   try {
-    const { id_member } = req.params;
+    const { id_member, start_date, end_date} = req.params;
 
     const activities = await User_Activity.findAll({
-      where: { id_member: id_member },
+      where: {
+        id_member: id_member,
+        date_start_act: { [db.Sequelize.Op.gte]: start_date },
+        date_stop_act: { [db.Sequelize.Op.lte]: end_date }
+      },
     });
 
     res.json(activities);

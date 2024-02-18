@@ -1,4 +1,4 @@
-const { Team_Member, User_Activity, Reward, Score } = require("../models");
+const { Team_Member, Reward_Item, Reward, Score } = require("../models");
 const db = require('../models');
 
 const createMember = async (req, res) => {
@@ -21,15 +21,12 @@ const createMember = async (req, res) => {
       id_member: member.id,
     });
 
-    res.status(201).json({ message: "Member created successfully" });
+    // Return the created member data in the response
+    res.status(201).json({ message: "Member created successfully", member });
   } catch (error) {
     console.error("Error creating member:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-};
-
-module.exports = {
-  createMember,
 };
 
 const getAllMembersWithDates = async (req, res) => {
@@ -46,7 +43,14 @@ const getAllMembersWithDates = async (req, res) => {
             start_date: { [db.Sequelize.Op.lte]: currentDate },
             end_date: { [db.Sequelize.Op.gte]: currentDate }
           },
-          attributes: ['id', 'spinned_at', 'start_date', 'end_date'], // Include required attributes
+          attributes: ['id', 'spinned_at', 'start_date', 'end_date'],
+          include: [
+            {
+              model: Reward_Item,
+              required: false,
+              attributes: ['title'],
+            }
+          ]
         },
         {
           model: Score,
@@ -56,29 +60,12 @@ const getAllMembersWithDates = async (req, res) => {
       ],
       attributes: ["id", "name", "member_role", "avatar"],
     });
-
-    // Step 2: Extract start_date and end_date from the rewards
-    const membersWithActivities = await Promise.all(members.map(async member => {
-      const memberData = member.toJSON();
-      const reward = memberData.Rewards[0] || [];
-
-      const activities = await User_Activity.findAll({
-        where: {
-          id_member: member.id,
-          date_start_act: { [db.Sequelize.Op.gte]: reward.start_date },
-          date_stop_act: { [db.Sequelize.Op.lte]: reward.end_date }
-        }
-      });
-
-      return { ...member.dataValues, activities };
-    }));
     
-    const membersData = membersWithActivities.map(member => ({
+    const membersData = members.map(member => ({
       ...member.dataValues
     }));
-    console.log('******members***********',membersData);
 
-    res.status(201).json({ members: membersWithActivities });
+    res.status(201).json({ members: membersData });
   } catch (error) {
     console.error("Error getting members data:", error);
     res.status(500).json({ message: "Internal Server Error" });
