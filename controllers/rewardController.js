@@ -13,7 +13,7 @@ const createRewardDates = async (req, res) => {
       id_member,
     });
 
-    return res.status(200).json({ message: 'Reward dates created successfully' });
+    return res.status(200).json({ message: 'Reward dates created successfully', reward });
   } catch (error) {
     console.error('Error creating reward dates:', error);
     return res.status(500).json({ message: 'Internal server error' });
