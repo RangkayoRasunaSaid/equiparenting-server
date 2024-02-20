@@ -105,6 +105,17 @@ const getMemberActivity = async (req, res) => {
         date_start_act: { [db.Sequelize.Op.gte]: start_date },
         date_stop_act: { [db.Sequelize.Op.lte]: end_date }
       },
+      order:[['date_start_act', 'ASC']]
+    });
+
+    // Sort activities to put null approval_by values first
+    activities.sort((a, b) => {
+      if (a.approval_by === null && b.approval_by !== null) {
+        return -1; // a comes before b
+      } else if (a.approval_by !== null && b.approval_by === null) {
+        return 1; // b comes before a
+      }
+      return 0; // no change in order
     });
 
     res.json(activities);

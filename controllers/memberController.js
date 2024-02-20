@@ -59,6 +59,7 @@ const getAllMembersWithDates = async (req, res) => {
         },
       ],
       attributes: ["id", "name", "member_role", "avatar"],
+      order: [['join_date', 'DESC']]
     });
     
     const membersData = members.map(member => ({
