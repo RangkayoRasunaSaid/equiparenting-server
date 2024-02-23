@@ -1,4 +1,4 @@
-const { Team_Member, Reward_Item, Reward, Score } = require("../models");
+const { Team_Member, Reward_Item, Reward, User_Activity, Score } = require("../models");
 const db = require('../models');
 
 const createMember = async (req, res) => {
@@ -32,17 +32,19 @@ const createMember = async (req, res) => {
 const getAllMembersWithDates = async (req, res) => {
   try {
     const userId = req.userId;
-    const currentDate = new Date();
+    // const currentDate = new Date();
     const members = await Team_Member.findAll({
       where: { id_user: userId },
       include: [
         {
           model: Reward,
           required: false,
-          where: {
-            start_date: { [db.Sequelize.Op.lte]: currentDate },
-            end_date: { [db.Sequelize.Op.gte]: currentDate }
-          },
+          order: [['start_date', 'DESC']],
+          limit: 1,
+          // where: {
+          //   start_date: { [db.Sequelize.Op.lte]: currentDate },
+          //   end_date: { [db.Sequelize.Op.gte]: currentDate }
+          // },
           attributes: ['id', 'spinned_at', 'start_date', 'end_date'],
           include: [
             {
@@ -80,6 +82,8 @@ const deleteMember = async (req, res) => {
     // Delete the associated score (if exists)
     await Score.destroy({ where: { id_member: memberId } });
     await Reward.destroy({ where: { id_member: memberId } });
+    await Reward_Item.destroy({ where: { id_member: memberId } });
+    await User_Activity.destroy({ where: { id_member: memberId } });
     
     // Delete the member
     const deletedMember = await Team_Member.destroy({ where: { id: memberId } });

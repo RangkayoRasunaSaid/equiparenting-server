@@ -1,4 +1,4 @@
-const { Reward } = require('../models'); // Assuming your model is in the 'models' directory
+const { Reward, Reward_Item } = require('../models'); // Assuming your model is in the 'models' directory
 
 // Controller to create new dates for a reward
 const createRewardDates = async (req, res) => {
@@ -17,6 +17,30 @@ const createRewardDates = async (req, res) => {
   } catch (error) {
     console.error('Error creating reward dates:', error);
     return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const createReward = async (req, res) => {
+  try {
+    const { id_member, title, id_reward } = req.body;
+
+    const newReward = await Reward_Item.create({
+      id_member,
+      title,
+      id_reward
+    });
+
+    const id = id_reward
+    const reward = await Reward.findByPk(id);
+    if (!reward) return res.status(404).json({ error: "Reward not found" })
+
+    reward.spinned_at = new Date();
+    await reward.save();
+
+    res.status(201).json(newReward);
+  } catch (error) {
+    console.error("Error creating reward:", error);
+    res.status(500).json({ message: "Error creating reward" });
   }
 };
 
@@ -100,4 +124,5 @@ module.exports = {
   updateRewardDates,
   getRewardDates,
   getAllRewardDates,
+  createReward
 };

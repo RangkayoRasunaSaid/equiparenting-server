@@ -15,4 +15,6 @@ router.get('/rewards', requireAuth, rewardController.getAllRewardDates);
 // POST route to create new dates for a reward
 router.post('/reward', requireAuth, rewardController.createRewardDates);
 
+router.post('/spin-wheel', rewardController.createReward);
+
 module.exports = router;

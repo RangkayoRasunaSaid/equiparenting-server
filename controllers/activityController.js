@@ -95,6 +95,54 @@ const createActivity = async (req, res) => {
   }
 };
 
+// Controller function to get activities grouped by reward period dates
+const getActivitiesGroupedByRewardPeriod = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    // Fetch all team members associated with the current user
+    const members = await Team_Member.findAll({
+      where: { id_user: userId },
+      include: [{
+        model: Reward,
+        attributes: ['start_date', 'end_date']
+      }]
+    });
+
+    // Iterate through each team member to fetch their activities within reward periods
+    const activitiesGroupedByRewardPeriod = [];
+    const memberIds = members.map(member => member.id);
+
+    // for (const member of members) {
+    const rewards = members[0].Rewards;
+
+    // Iterate through each reward to fetch activities within its period
+    for (const reward of rewards) {
+      const activities = await User_Activity.findAll({
+        where: {
+          id_member: {
+            [db.Sequelize.Op.in]: memberIds, // Filter activities for all member ids
+          },
+          date_start_act: { [db.Sequelize.Op.gt]: reward.start_date }, // Activities after reward start date
+          date_stop_act: { [db.Sequelize.Op.lt]: reward.end_date }     // Activities before reward end date
+        }
+      });
+
+      // Add the activities to the corresponding reward period group
+      activitiesGroupedByRewardPeriod.push({
+        rewardPeriod: { start_date: reward.start_date, end_date: reward.end_date },
+        activities: activities
+      });
+    }
+    // }
+
+    res.status(200).json(activitiesGroupedByRewardPeriod);
+  } catch (error) {
+    console.error('Error fetching activities grouped by reward period:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 const getMemberActivity = async (req, res) => {
   try {
     const { id_member, start_date, end_date} = req.params;
@@ -197,5 +245,6 @@ module.exports = {
   approveActivity,
   getTotalPointsByMemberId,
   getAllCategories,
-  getMemberActivityStats
+  getMemberActivityStats,
+  getActivitiesGroupedByRewardPeriod
 };
