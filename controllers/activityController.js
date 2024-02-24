@@ -119,8 +119,8 @@ const getActivitiesGroupedByRewardPeriod = async (req, res) => {
       const activities = await User_Activity.findAll({
         where: {
           id_member: { [db.Sequelize.Op.in]: memberIds, },
-          date_start_act: { [db.Sequelize.Op.gt]: reward.start_date }, // Activities after reward start date
-          date_stop_act: { [db.Sequelize.Op.lt]: reward.end_date },     // Activities before reward end date
+          date_start_act: { [db.Sequelize.Op.gte]: reward.start_date }, // Activities after reward start date
+          date_stop_act: { [db.Sequelize.Op.lte]: reward.end_date },     // Activities before reward end date
         },
         order: [['date_start_act', 'DESC']]
       });
