@@ -105,27 +105,24 @@ const getActivitiesGroupedByRewardPeriod = async (req, res) => {
       where: { id_user: userId },
       include: [{
         model: Reward,
-        attributes: ['start_date', 'end_date']
+        attributes: ['start_date', 'end_date'],
+        order: [['start_date', 'DESC']]
       }]
     });
 
-    // Iterate through each team member to fetch their activities within reward periods
     const activitiesGroupedByRewardPeriod = [];
     const memberIds = members.map(member => member.id);
-
-    // for (const member of members) {
     const rewards = members[0].Rewards;
 
     // Iterate through each reward to fetch activities within its period
     for (const reward of rewards) {
       const activities = await User_Activity.findAll({
         where: {
-          id_member: {
-            [db.Sequelize.Op.in]: memberIds, // Filter activities for all member ids
-          },
+          id_member: { [db.Sequelize.Op.in]: memberIds, },
           date_start_act: { [db.Sequelize.Op.gt]: reward.start_date }, // Activities after reward start date
-          date_stop_act: { [db.Sequelize.Op.lt]: reward.end_date }     // Activities before reward end date
-        }
+          date_stop_act: { [db.Sequelize.Op.lt]: reward.end_date },     // Activities before reward end date
+        },
+        order: [['date_start_act', 'DESC']]
       });
 
       // Add the activities to the corresponding reward period group
