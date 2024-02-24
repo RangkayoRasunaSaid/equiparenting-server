@@ -11,7 +11,13 @@ const scoreRouter = require("./routes/scoreRouter");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// Define CORS options
+const corsOptions = {
+  origin: 'http://localhost:5173', // Allow requests from this origin
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
+app.use(cors(corsOptions));
 
 app.use(bodyParser.json());
 app.use(authRouter);
