@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Reward_Item.belongsTo(models.Reward, { foreignKey: "id_reward" });
       Reward_Item.belongsTo(models.Team_Member, { foreignKey: "id_member" });
     }
   }
@@ -17,6 +18,13 @@ module.exports = (sequelize, DataTypes) => {
       title: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      id_reward: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: "Reward",
+          key: "id",
+        },
       },
       id_member: {
         type: DataTypes.INTEGER,

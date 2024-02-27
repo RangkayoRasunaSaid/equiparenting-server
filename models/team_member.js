@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       Team_Member.belongsTo(models.User, { foreignKey: "id_user" });
       Team_Member.hasOne(models.Score, { foreignKey: "id_member" });
+      Team_Member.hasMany(models.Reward, { foreignKey: "id_member" });
     }
   }
 
