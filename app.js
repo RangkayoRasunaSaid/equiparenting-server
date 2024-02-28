@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 
 // Define CORS options
 const corsOptions = {
-  origin: 'http://localhost:5173', // Allow requests from this origin
+  origin: ['http://localhost:5173', 'https://equiparenting.netlify.app/'],
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
