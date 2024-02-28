@@ -12,12 +12,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware to enable CORS
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://equiparenting.netlify.app');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+app.use(cors({
+  origin: 'https://equiparenting.netlify.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+}));
 
 app.use(bodyParser.json());
 app.use(authRouter);
