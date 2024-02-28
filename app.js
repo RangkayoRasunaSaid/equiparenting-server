@@ -11,11 +11,13 @@ const scoreRouter = require("./routes/scoreRouter");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Define CORS options
-const corsOptions = {
-  origin: ['http://localhost:5173', 'https://equiparenting.netlify.app/'],
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-};
+// Middleware to enable CORS
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://equiparenting.netlify.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
 
 app.use(cors(corsOptions));
 
