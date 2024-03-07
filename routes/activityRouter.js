@@ -9,6 +9,6 @@ router.get("/activities/:id_member/:start_date/:end_date", activityController.ge
 router.put("/activities/approve/:id_activity", activityController.approveActivity);
 router.get("/activities/points/:id_member", activityController.getTotalPointsByMemberId);
 router.get('/categories', activityController.getAllCategories);
-router.get('/stats/:id_member/:start_date/:end_date', requireAuth, activityController.getMemberActivityStats);
+router.get('/stats/:start_date/:end_date', requireAuth, activityController.getMemberActivityStats);
 
 module.exports = router;

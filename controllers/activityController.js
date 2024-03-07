@@ -1,73 +1,93 @@
 const { User_Activity, Team_Member, Score, Reward } = require("../models");
-const db = require('../models'); // Assuming your Sequelize instance is exported from this file
+const db = require('../models');
 
 const getMemberActivityStats = async (req, res) => {
   try {
-    const { id_member, start_date, end_date} = req.params;
+    const userId = req.userId;
+    const { start_date, end_date} = req.params;
 
-    const activities = await User_Activity.findAll({
-      where: {
-        id_member: id_member,
-        date_start_act: { [db.Sequelize.Op.gte]: start_date },
-        date_stop_act: { [db.Sequelize.Op.lte]: end_date }
-      },
+    // Fetch all team members associated with the current user
+    const members = await Team_Member.findAll({
+      where: { id_user: userId },
+      attributes: ['id']
     });
-
-    // Query for activities with approval_by true
-    const approvedActivities = await User_Activity.findAll({
-      where: {
-        id_member: id_member,
-        date_start_act: { [db.Sequelize.Op.gte]: start_date },
-        date_stop_act: { [db.Sequelize.Op.lte]: end_date },
-        approval_by: { [db.Sequelize.Op.not]: null },
-      },
-    });
-
-    const score = await Score.findAll({
-      attributes: ['score'],
-      where: {
-        id_member: id_member,
-      }
-    })
-
-    // Total count of activities
-    const completedActivitiesCount = approvedActivities.length;
-    const totalActivitiesCount = activities.length;
-
-    // Total points of all activities
-    const totalPoints = activities.reduce((acc, activity) => acc + activity.point, 0);
     
-    // Count of different categories with approval_by
-    const categoryCounts = await User_Activity.findAll({
-      attributes: [
-        "category",
-        [db.Sequelize.fn("COUNT", "category"), "categoryCount"],
-      ],
-      where: {
-        id_member: id_member,
-        date_start_act: { [db.Sequelize.Op.gte]: start_date },
-        date_stop_act: { [db.Sequelize.Op.lte]: end_date },
-        approval_by: { [db.Sequelize.Op.not]: null },
-      },
-      group: ["category"],
-      order: [[db.Sequelize.literal("categoryCount DESC")]]
-    });
+    const memberIds = members.map(member => member.id);
 
-    const maxCount = categoryCounts.length > 0 ? categoryCounts[0].dataValues.categoryCount : 0;
+    const memberStats = {}; // Object to store member stats
 
-    // Find all categories with the maximum categoryCount
-    const categoriesWithMaxCount = categoryCounts.filter(category => category.dataValues.categoryCount === maxCount);
+    for (const memberId of memberIds) {
+      const activities = await User_Activity.findAll({
+        attributes: ['point'],
+        where: {
+          id_member: memberId,
+          date_start_act: { [db.Sequelize.Op.gte]: start_date },
+          date_stop_act: { [db.Sequelize.Op.lte]: end_date }
+        }
+      });
 
-    res.json({
-      approvedActivities: completedActivitiesCount,
-      totalActivitiesCount: totalActivitiesCount,
-      percentage: Math.round(score[0].dataValues.score/(totalPoints || 1)*100),
-      totalPoints: totalPoints,
-      categoryCounts: categoryCounts,
-      maxApprovalCategory: categoriesWithMaxCount.length === 1 ? categoriesWithMaxCount[0] : null,
-    });
+      // Query for activities with approval_by true
+      const approvedActivities = await User_Activity.findAll({
+        attributes: ['id'],
+        where: {
+          id_member: memberId,
+          date_start_act: { [db.Sequelize.Op.gte]: start_date },
+          date_stop_act: { [db.Sequelize.Op.lte]: end_date },
+          approval_by: { [db.Sequelize.Op.not]: null },
+        }
+      });
+
+      const score = await Score.findAll({
+        attributes: ['score'],
+        where: {
+          id_member: memberId,
+        }
+      });
+
+      // Total count of activities
+      const completedActivitiesCount = approvedActivities.length;
+      const totalActivitiesCount = activities.length;
+
+      // Total points of all activities
+      const totalPoints = activities.reduce((acc, activity) => acc + activity.point, 0);
+      
+      // Count of different categories with approval_by
+      const categoryCounts = await User_Activity.findAll({
+        attributes: [
+          "category",
+          [db.Sequelize.fn("COUNT", "category"), "categoryCount"],
+        ],
+        where: {
+          id_member: memberId,
+          date_start_act: { [db.Sequelize.Op.gte]: start_date },
+          date_stop_act: { [db.Sequelize.Op.lte]: end_date },
+          approval_by: { [db.Sequelize.Op.not]: null },
+        },
+        group: ["category"],
+        order: [[db.Sequelize.literal("categoryCount DESC")]]
+      });
+
+      const maxCount = categoryCounts.length > 0 ? categoryCounts[0].dataValues.categoryCount : 0;
+
+      // Find all categories with the maximum categoryCount
+      const categoriesWithMaxCount = categoryCounts.filter(category => category.dataValues.categoryCount === maxCount);
+
+      let percent = 0
+      if (score.length > 0) percent = score[0].dataValues.score
+
+      // Store member stats in the object
+      memberStats[memberId] = {
+        approvedActivities: completedActivitiesCount,
+        totalActivitiesCount: totalActivitiesCount,
+        percentage: Math.round(percent/(totalPoints || 1)*100),
+        totalPoints: totalPoints,
+        categoryCounts: categoryCounts,
+        maxApprovalCategory: categoriesWithMaxCount.length === 1 ? categoriesWithMaxCount[0] : null,
+      };
+    }
+
+    res.json(memberStats);
   } catch (error) {
-    // Handle errors appropriately
     console.error("Error getting stats:", error);
     res.status(500).json({ message: 'Internal server error' });
   }
